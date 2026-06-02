@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: argos_db
+    restart: always
+    environment:
+      POSTGRES_DB: argos
+      POSTGRES_USER: argos_user
+      POSTGRES_PASSWORD: argos_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

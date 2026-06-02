@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: argos_db
+    restart: always
+    environment:
+      POSTGRES_DB: argos
+      POSTGRES_USER: argos_user
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5433:5432"  # Aprovechamos de una vez a cambiar el puerto al 5433
+    volumes:
+      - ./postgres_data_local:/var/lib/postgresql/data # <--- Guardará los datos en tu carpeta del proyecto
