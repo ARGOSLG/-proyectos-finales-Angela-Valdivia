@@ -1,1 +1,10 @@
 *.sqlite*
+
+postgres_data_local/
+
+.env
+
+# Storage de Laravel
+storage/app/
+storage/logs/
+storage/framework/

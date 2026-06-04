@@ -88,7 +88,7 @@ return [
     'driver' => 'pgsql',
     'url' => env('DB_URL'),
     'host' => env('DB_HOST', '127.0.0.1'),
-    'port' => '5433', // <--- Ponle '5433' entre comillas directo aquí, borrando el env()
+    'port' => '5432', 
     'database' => env('DB_DATABASE', 'argos'),
     'username' => env('DB_USERNAME', 'argos_user'),
     'password' => env('DB_PASSWORD', 'password123'),
