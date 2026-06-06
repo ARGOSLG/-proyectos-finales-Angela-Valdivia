@@ -6,20 +6,44 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('audit_log', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->uuid('id')->primary();
+
+            // Quién hizo la acción — nullable por si fue el sistema automático
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->foreign('user_id')
+            ->references('id')
+            ->on('users')
+            ->nullOnDelete();
+
+            // Qué acción realizó
+            // Ej: 'created', 'updated', 'deleted', 'resolved_alert', 'motor_cut'
+            $table->string('action');
+
+            // En qué tabla ocurrió
+            $table->string('table_name');
+
+            // ID del registro afectado
+            $table->uuid('record_id')->nullable();
+
+            // Datos antes y después del cambio — para poder revertir si es necesario
+            $table->json('payload')->nullable();
+
+            // Desde dónde se hizo — IP del operador o 'system' si fue automático
+            $table->string('ip_address', 45)->nullable();
+
+            // Índices para búsquedas en la bitácora
+            $table->index(['user_id', 'created_at']);
+            $table->index(['table_name', 'record_id']);
+            $table->index(['action', 'created_at']);
+
+            // Solo created_at — los logs nunca se modifican
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('audit_log');

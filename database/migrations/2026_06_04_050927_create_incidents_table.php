@@ -6,20 +6,73 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('incidents', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+
+            // Alerta que originó este incidente
+            // Una alerta crítica escala a incidente activo
+            $table->foreignUuid('alert_id')
+                  ->constrained('alerts')
+                  ->cascadeOnDelete();
+
+            // Conductor y vehículo involucrados
+            $table->foreignUuid('driver_id')
+                  ->nullable()
+                  ->constrained('drivers')
+                  ->nullOnDelete();
+
+            $table->foreignUuid('vehicle_id')
+                  ->nullable()
+                  ->constrained('vehicles')
+                  ->nullOnDelete();
+
+            // Operador que está atendiendo el incidente
+            // users usa bigint, no uuid — por eso usamos unsignedBigInteger
+            $table->unsignedBigInteger('resolved_by')->nullable();
+            $table->foreign('resolved_by')
+            ->references('id')
+            ->on('users')
+            ->nullOnDelete();
+
+            // Tipo de incidente
+            $table->enum('type', [
+                'security',     // robo, asalto, palabra clave detectada
+                'medical',      // conductor con malestar
+                'accident',     // accidente vial
+                'mechanical',   // falla del vehículo
+                'behavior',     // conducta indebida del conductor
+                'other',
+            ]);
+
+            // Si fue keyword_detected — qué palabra se detectó
+            $table->string('keyword_detected')->nullable();
+
+            // Ubicación donde ocurrió el incidente
+            $table->decimal('lat', 10, 7)->nullable();
+            $table->decimal('lng', 10, 7)->nullable();
+
+            // Estado del incidente
+            $table->enum('status', [
+                'open',         // recién creado, sin atender
+                'in_progress',  // operador lo está atendiendo
+                'resolved',     // resuelto satisfactoriamente
+                'false_alarm',  // fue una falsa alarma
+            ])->default('open');
+
+            // Tiempos del incidente
+            $table->timestamp('started_at')->useCurrent();
+            $table->timestamp('closed_at')->nullable();
+
+            // Índices para búsquedas rápidas
+            $table->index(['status', 'started_at']);
+            $table->index(['driver_id', 'started_at']);
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('incidents');
