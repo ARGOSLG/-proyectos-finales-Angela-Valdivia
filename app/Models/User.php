@@ -29,4 +29,29 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    // ─── Relaciones ARGOS ─────────────────────────────────────────
+
+// Un usuario (operador) pertenece a una empresa
+public function company()
+{
+    return $this->belongsTo(Company::class);
+}
+
+// Un usuario puede haber resuelto muchas alertas
+public function resolvedAlerts()
+{
+    return $this->hasMany(Alert::class, 'resolved_by');
+}
+
+// Un usuario puede haber atendido muchos incidentes
+public function incidents()
+{
+    return $this->hasMany(Incident::class, 'operator_id');
+}
+
+// Un usuario tiene muchos registros en la bitácora
+public function auditLogs()
+{
+    return $this->hasMany(AuditLog::class);
+}
 }
