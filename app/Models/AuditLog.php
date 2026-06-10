@@ -5,13 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class AuditLog extends Model
+class AuditLog extends Model // ◄── Corregido a singular para que coincida con tu Controlador
 {
     use HasUuids;
 
+    // Fuerza al modelo a usar la tabla en plural que renombramos en PostgreSQL
+    protected $table = 'audit_logs';
+    
     // Los logs nunca se modifican — solo created_at
     public $timestamps = false;
-
+    
     protected $fillable = [
         'user_id',
         'action',
