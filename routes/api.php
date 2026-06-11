@@ -1,10 +1,10 @@
 <?php
-
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DriverController;
 use App\Http\Controllers\Api\VehicleController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\IoTController;
 
 /*
 
@@ -39,5 +39,33 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('drivers', DriverController::class);
     Route::apiResource('vehicles', VehicleController::class);
 
+    // Ruta de prueba — solo admin puede acceder
+    Route::middleware('role:admin')->group(function () {
+        Route::get('admin/test', function () {
+            return response()->json([
+                'message' => 'Eres admin, tienes acceso'
+            ]);
+        });
+    });
+
 });
+//  Rutas IoT — autenticadas con device token 
+// El Arduino y el módulo GPS usan estas rutas
+// Header requerido: X-Device-Token: {token}
+Route::middleware('device.token')->prefix('iot')->group(function () {
+
+    // Arduino detectó palabra clave
+    // POST /api/iot/audio-event
+    Route::post('audio-event', [IoTController::class, 'audioEvent']);
+
+    // Módulo GPS manda posición cada 10s
+    // POST /api/iot/location
+    Route::post('location', [IoTController::class, 'location']);
+
+    // Módulo GPS manda lote de ubicaciones guardadas offline
+    // POST /api/iot/location/batch
+    Route::post('location/batch', [IoTController::class, 'locationBatch']);
+
+});
+
 

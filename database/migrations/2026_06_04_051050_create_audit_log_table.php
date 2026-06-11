@@ -11,13 +11,11 @@ return new class extends Migration
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
-            // Quién hizo la acción — nullable por si fue el sistema automático
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->foreign('user_id')
-                ->references('id')
-                ->on('users')
-                ->nullOnDelete();
-
+            
+            $table->foreignUuid('user_id')
+            ->nullable()
+            ->constrained('users')
+            ->nullOnDelete();
             // Qué acción realizó
             // Ej: 'created', 'updated', 'deleted', 'resolved_alert', 'motor_cut'
             $table->string('action');

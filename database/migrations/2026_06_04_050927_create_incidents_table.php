@@ -29,12 +29,11 @@ return new class extends Migration
                   ->nullOnDelete();
 
             // Operador que está atendiendo el incidente
-            // users usa bigint, no uuid — por eso usamos unsignedBigInteger
-            $table->unsignedBigInteger('resolved_by')->nullable();
-            $table->foreign('resolved_by')
-            ->references('id')
-            ->on('users')
-            ->nullOnDelete();
+            $table->foreignUuid('operator_id')
+             ->nullable()
+             ->constrained('users')
+             ->nullOnDelete();
+              
 
             // Tipo de incidente
             $table->enum('type', [

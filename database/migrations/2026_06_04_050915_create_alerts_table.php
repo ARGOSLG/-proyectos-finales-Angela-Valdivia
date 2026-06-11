@@ -63,11 +63,10 @@ return new class extends Migration
 
             // Quién y cuándo la resolvió
             
-            $table->unsignedBigInteger('resolved_by')->nullable();
-            $table->foreign('resolved_by')
-            ->references('id')
-            ->on('users')
-            ->nullOnDelete();
+            $table->foreignUuid('resolved_by')
+             ->nullable()
+             ->constrained('users')
+             ->nullOnDelete();
 
             // Índices para el panel — consultas frecuentes por empresa y estado
             $table->index(['company_id', 'status']);
