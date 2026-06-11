@@ -27,6 +27,7 @@ class CompanyController extends Controller
             'rfc'           => 'required|string|max:13|unique:companies',
             'contact_email' => 'required|email|unique:companies',
             'phone'         => 'nullable|string|max:20',
+            'plan' => 'nullable|string|max:50',
             'active'        => 'boolean',
         ]);
 
@@ -55,6 +56,7 @@ class CompanyController extends Controller
             'rfc'           => 'sometimes|string|max:13|unique:companies,rfc,' . $company->id,
             'contact_email' => 'sometimes|email|unique:companies,contact_email,' . $company->id,
             'phone'         => 'nullable|string|max:20',
+            'plan' => 'nullable|string|max:50',
             'active'        => 'boolean',
         ]);
 

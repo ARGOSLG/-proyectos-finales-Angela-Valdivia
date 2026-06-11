@@ -8,12 +8,15 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class Company extends Model
 {
     use HasUuids;
+    protected $keyType = 'string';
+    public $incrementing = false;
 
     protected $fillable = [
         'name',
         'rfc',
         'contact_email',
         'phone',
+        'plan',
         'active',
     ];
 
