@@ -34,8 +34,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // GET /api/auth/me
     Route::get('auth/me', [AuthController::class, 'me']);
 
+    Route::apiResource('companies', CompanyController::class);
+    Route::apiResource('drivers', DriverController::class);
+    Route::apiResource('vehicles', VehicleController::class);
+
 });
 
-Route::apiResource('companies', CompanyController::class);
-Route::apiResource('drivers', DriverController::class);
-Route::apiResource('vehicles', VehicleController::class);
