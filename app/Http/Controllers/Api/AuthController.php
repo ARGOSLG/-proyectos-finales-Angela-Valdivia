@@ -43,7 +43,7 @@ class AuthController extends Controller
         $token = $user->createToken('argos-panel')->plainTextToken;
 
         // 6. Registrar en bitácora
-        AuditLog::register('login', 'users', $user->id);
+        AuditLog::register('login', 'users');
 
         // 7. Devolver el token y datos del usuario
         return response()->json([
@@ -67,7 +67,7 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         // Registrar en bitácora
-        AuditLog::register('logout', 'users', $request->user()->id);
+        AuditLog::register('logout', 'users');
 
         return response()->json([
             'message' => 'Sesión cerrada correctamente'

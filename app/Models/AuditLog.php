@@ -10,7 +10,7 @@ class AuditLog extends Model // ◄── Corregido a singular para que coincida
     use HasUuids;
 
     // Fuerza al modelo a usar la tabla en plural que renombramos en PostgreSQL
-    protected $table = 'audit_logs';
+    protected $table = 'audit_log';
     
     // Los logs nunca se modifican — solo created_at
     public $timestamps = false;
