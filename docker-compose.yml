@@ -1,145 +1,16 @@
 services:
-
-  # ─────────────────────────────────────────
-  # PHP + Laravel (la app principal)
-  # ─────────────────────────────────────────
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: argos_app
-    restart: unless-stopped
-    working_dir: /var/www
-    volumes:
-      - .:/var/www          # código Laravel vive aquí
-      - ./storage:/var/www/storage  # uploads, logs, cache
-    environment:
-      - PHP_OPCACHE_ENABLE=0    # desactivado en desarrollo
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - argos_network
-
-  # ─────────────────────────────────────────
-  # Nginx (servidor web, proxy hacia PHP-FPM)
-  # ─────────────────────────────────────────
-  nginx:
-    image: nginx:1.25-alpine
-    container_name: argos_nginx
-    restart: unless-stopped
-    ports:
-      - "8080:80"               #  app en http://localhost:8080
-    volumes:
-      - .:/var/www
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - app
-    networks:
-      - argos_network
-
-  # ─────────────────────────────────────────
-  # PostgreSQL 16
-  # ─────────────────────────────────────────
   postgres:
     image: postgres:16
     container_name: argos_db
-    restart: unless-stopped
+    restart: always
     environment:
       POSTGRES_DB: argos
       POSTGRES_USER: argos_user
-      POSTGRES_PASSWORD: password123
+      POSTGRES_PASSWORD: argos_pass
     ports:
       - "5432:5432"
-      - "5433:5433"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U argos_user -d argos"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - argos_network
 
-  # ─────────────────────────────────────────
-  # Redis (colas, cache, WebSockets)
-  # ─────────────────────────────────────────
-  redis:
-    image: redis:7-alpine
-    container_name: argos_redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass redis_password123
-    ports:
-      - "6380:6379"            
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "redis_password123", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - argos_network
-
-  # ─────────────────────────────────────────
-  # Laravel Queue Worker (procesa alertas, notificaciones, etc.)
-  # contenedor de PHP pero ejecuta `queue:work`
-  # ─────────────────────────────────────────
-  queue:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: argos_queue
-    restart: unless-stopped
-    working_dir: /var/www
-    command: php artisan queue:work redis --sleep=3 --tries=3 --timeout=90
-    volumes:
-      - .:/var/www
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - argos_network
-
-  # ─────────────────────────────────────────
-  # Laravel Reverb (WebSockets — panel admin en tiempo real)
-  
-  # ─────────────────────────────────────────
-  reverb:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: argos_reverb
-    restart: unless-stopped
-    working_dir: /var/www
-    command: php artisan reverb:start --host=0.0.0.0 --port=8080
-    ports:
-      - "6001:8080"             # WebSocket en ws://localhost:6001
-    volumes:
-      - .:/var/www
-    depends_on:
-      - app
-      - redis
-    networks:
-      - argos_network
-
-# ─────────────────────────────────────────
-# Volúmenes nombrados (Docker los gestiona)
-# Son más rápidos que carpetas locales para datos de DB
-# ─────────────────────────────────────────
 volumes:
   postgres_data:
-  redis_data:
-
-# ─────────────────────────────────────────
-# Red interna — los servicios se comunican
-# por nombre, ej: host=postgres, host=redis
-# ─────────────────────────────────────────
-networks:
-  argos_network:
-    driver: bridge

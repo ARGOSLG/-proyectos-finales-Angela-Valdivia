@@ -23,15 +23,35 @@ class Driver extends Model
         'status',
     ];
 
+    // ─── Relaciones ───────────────────────────────────────────
+
     // Un conductor pertenece a una empresa
     public function company()
     {
         return $this->belongsTo(Company::class);
     }
 
-    // Un conductor puede tener un vehículo asignado
-    public function vehicle()
+    // Un conductor puede tener muchos vehículos asignados
+    public function vehicles()
     {
-        return $this->hasOne(Vehicle::class);
+        return $this->hasMany(Vehicle::class);
+    }
+
+    // Un conductor tiene muchas alertas generadas
+    public function alerts()
+    {
+        return $this->hasMany(Alert::class);
+    }
+
+    // Un conductor tiene muchos incidentes
+    public function incidents()
+    {
+        return $this->hasMany(Incident::class);
+    }
+
+    // Un conductor tiene muchas notificaciones recibidas
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
     }
 }
