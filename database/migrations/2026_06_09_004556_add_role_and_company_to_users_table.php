@@ -9,29 +9,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Rol del usuario en el sistema
-            $table->enum('role', ['admin', 'operator', 'supervisor'])
-                  ->default('operator')
-                  ->after('password');
-
-            // A qué empresa pertenece — nullable para el super admin
-            $table->foreignUuid('company_id')
-                  ->nullable()
-                  ->after('role')
-                  ->constrained('companies')
+            // Aquí enlazamos la columna que ya declaramos con la tabla companies que ya se creó
+            $table->foreign('company_id')
+                  ->references('id')
+                  ->on('companies')
                   ->nullOnDelete();
-
-            // Usuario activo o inactivo
-            $table->boolean('active')
-                  ->default(true)
-                  ->after('company_id');
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['role', 'company_id', 'active']);
+            $table->dropForeign(['company_id']);
         });
     }
 };

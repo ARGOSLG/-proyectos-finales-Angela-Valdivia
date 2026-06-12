@@ -31,4 +31,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // GET /api/auth/me
     Route::get('auth/me', [AuthController::class, 'me']);
 
+    // Ruta de prueba — solo admin puede acceder
+    Route::middleware('role:admin')->group(function () {
+        Route::get('admin/test', function () {
+            return response()->json([
+                'message' => 'Eres admin, tienes acceso'
+            ]);
+        });
+    });
+
 });
