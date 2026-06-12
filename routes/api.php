@@ -1,7 +1,7 @@
 <?php
-
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\IoTController;
 
 /*
 
@@ -39,5 +39,23 @@ Route::middleware('auth:sanctum')->group(function () {
             ]);
         });
     });
+
+});
+//  Rutas IoT — autenticadas con device token 
+// El Arduino y el módulo GPS usan estas rutas
+// Header requerido: X-Device-Token: {token}
+Route::middleware('device.token')->prefix('iot')->group(function () {
+
+    // Arduino detectó palabra clave
+    // POST /api/iot/audio-event
+    Route::post('audio-event', [IoTController::class, 'audioEvent']);
+
+    // Módulo GPS manda posición cada 10s
+    // POST /api/iot/location
+    Route::post('location', [IoTController::class, 'location']);
+
+    // Módulo GPS manda lote de ubicaciones guardadas offline
+    // POST /api/iot/location/batch
+    Route::post('location/batch', [IoTController::class, 'locationBatch']);
 
 });
