@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\DriverController;
 use App\Http\Controllers\Api\VehicleController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\IoTController;
+use App\Http\Controllers\Api\VehicleLocationController;
 
 /*
 
@@ -47,6 +48,11 @@ Route::middleware('auth:sanctum')->group(function () {
             ]);
         });
     });
+
+    // Ruta validacion de vehiculos
+    Route::get('vehicles/{vehicle}/locations', [VehicleLocationController::class, 'index']);
+    Route::post('vehicles/{vehicle}/locations', [VehicleLocationController::class, 'store']);
+    Route::get('vehicles/{vehicle}/locations/last', [VehicleLocationController::class, 'last']);
 
 });
 //  Rutas IoT — autenticadas con device token 
