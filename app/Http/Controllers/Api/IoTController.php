@@ -141,6 +141,37 @@ class IoTController extends Controller
             ]);
         }
 
+        // 6. Verificar frenada brusca — comparar con última velocidad registrada
+        if ($request->speed_kmh !== null) {
+            $lastLocation = VehicleLocation::where('vehicle_id', $vehicle->id)
+                ->orderByDesc('recorded_at')
+                ->skip(1)
+                ->first();
+
+            if ($lastLocation && $lastLocation->speed_kmh !== null) {
+                $speedDrop = $lastLocation->speed_kmh - $request->speed_kmh;
+
+                if ($speedDrop >= 30) {
+                    Alert::create([
+                        'company_id' => $vehicle->company_id,
+                        'driver_id'  => $vehicle->driver_id,
+                        'vehicle_id' => $vehicle->id,
+                        'type'       => 'harsh_braking',
+                        'severity'   => $speedDrop >= 50 ? 'critical' : 'warning',
+                        'source'     => 'gps_module',
+                        'metadata'   => [
+                            'speed_before_kmh' => $lastLocation->speed_kmh,
+                            'speed_after_kmh'  => $request->speed_kmh,
+                            'speed_drop_kmh'   => $speedDrop,
+                            'lat'              => $request->lat,
+                            'lng'              => $request->lng,
+                        ],
+                        'status' => 'active',
+                    ]);
+                }
+            }
+        }
+
         return response()->json([
             'message' => 'Ubicación registrada',
         ], 201);
