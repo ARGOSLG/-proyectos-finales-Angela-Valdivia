@@ -9,6 +9,7 @@ use App\Models\DeviceToken;
 use App\Models\VehicleLocation;
 use App\Models\Trip;
 use Illuminate\Http\Request;
+use App\Jobs\ProcessAlert;
 
 class IoTController extends Controller
 {
@@ -63,8 +64,9 @@ class IoTController extends Controller
                 'location_at' => now(),
             ]);
         }
-
+        
         // 6. Registrar en bitácora
+        \App\Jobs\ProcessAlert::dispatch($alert);
         AuditLog::register('audio_event', 'alerts', $alert->id, [
             'keyword'  => $request->keyword,
             'severity' => $severity,
