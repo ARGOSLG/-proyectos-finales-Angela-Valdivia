@@ -67,6 +67,8 @@ class IoTController extends Controller
         
         // 6. Registrar en bitácora
         \App\Jobs\ProcessAlert::dispatch($alert);
+        // 7. Emitir evento WebSocket al panel admin en tiempo real
+        \App\Events\AlertCreated::dispatch($alert->load('vehicle', 'driver'));
         AuditLog::register('audio_event', 'alerts', $alert->id, [
             'keyword'  => $request->keyword,
             'severity' => $severity,
