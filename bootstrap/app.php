@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         'role' => \App\Http\Middleware\CheckRole::class,
          'device.token' => \App\Http\Middleware\DeviceTokenMiddleware::class,
     ]);
+     // Para APIs — devolver JSON en lugar de redirigir al login
+    $middleware->redirectGuestsTo(fn() => response()->json([
+        'message' => 'No autenticado'
+    ], 401));
 })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
