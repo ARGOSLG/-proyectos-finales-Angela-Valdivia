@@ -2,6 +2,7 @@
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\IoTController;
+use App\Http\Controllers\Api\ProtocolController;
 
 /*
 
@@ -39,7 +40,16 @@ Route::middleware('auth:sanctum')->group(function () {
             ]);
         });
     });
-
+// ─── Protocolos ──────────────────────────────────────────────
+Route::prefix('protocols')->group(function () {
+    //Esta ruta es para listar los protocolos de la empresa
+    Route::get('/',                          [ProtocolController::class, 'index']);
+    Route::post('/',                         [ProtocolController::class, 'store']);
+    Route::get('/{id}',                      [ProtocolController::class, 'show']);
+    Route::post('/{id}/execute',             [ProtocolController::class, 'execute']);
+    Route::patch('/executions/{id}/step',    [ProtocolController::class, 'updateStep']);
+    Route::post('/executions/{id}/motor-cut',[ProtocolController::class, 'motorCut']);
+});
 });
 //  Rutas IoT — autenticadas con device token 
 // El Arduino y el módulo GPS usan estas rutas

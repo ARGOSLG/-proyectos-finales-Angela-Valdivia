@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class AuditLog extends Model // ◄── Corregido a singular para que coincida con tu Controlador
+class AuditLog extends Model
 {
     use HasUuids;
 
