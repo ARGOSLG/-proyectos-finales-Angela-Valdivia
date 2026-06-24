@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\VehicleController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\IoTController;
 use App\Http\Controllers\Api\VehicleLocationController;
+use App\Http\Controllers\Api\IncidentEvidenceController;
 
 /*
 
@@ -53,6 +54,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('vehicles/{vehicle}/locations', [VehicleLocationController::class, 'index']);
     Route::post('vehicles/{vehicle}/locations', [VehicleLocationController::class, 'store']);
     Route::get('vehicles/{vehicle}/locations/last', [VehicleLocationController::class, 'last']);
+
+    Route::get('incidents/{incident}/evidences', [IncidentEvidenceController::class, 'index']);
+    Route::post('incidents/{incident}/evidences', [IncidentEvidenceController::class, 'store']);
+    Route::delete('incidents/{incident}/evidences/{evidence}', [IncidentEvidenceController::class, 'destroy']);
 
 });
 //  Rutas IoT — autenticadas con device token 

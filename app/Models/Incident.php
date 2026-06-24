@@ -57,9 +57,10 @@ class Incident extends Model
     }
 
     // Un incidente tiene muchas evidencias
-    public function evidenceFiles()
+    // Un incidente tiene muchas evidencias
+    public function evidences()
     {
-        return $this->hasMany(EvidenceFile::class);
+        return $this->hasMany(IncidentEvidence::class);
     }
 
     // ─── Scopes ───────────────────────────────────────────────
