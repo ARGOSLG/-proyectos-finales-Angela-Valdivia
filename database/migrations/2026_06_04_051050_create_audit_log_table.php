@@ -32,6 +32,10 @@ return new class extends Migration
 
             // Desde dónde se hizo — IP del operador o 'system' si fue automático
             $table->string('ip_address', 45)->nullable();
+            $table->string('hash', 64)->nullable();
+
+             // SHA256 del registro para evidencia legal
+            $table->string('hash', 64)->nullable(); 
 
             // Índices para búsquedas en la bitácora
             $table->index(['user_id', 'created_at']);
