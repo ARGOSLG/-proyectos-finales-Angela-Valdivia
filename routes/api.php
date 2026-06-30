@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\EvidenceController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\IoTController;
 use App\Http\Controllers\Api\ProtocolController;
@@ -52,4 +53,11 @@ Route::middleware('device.token')->prefix('iot')->group(function () {
     Route::post('audio-event',    [IoTController::class, 'audioEvent']);
     Route::post('location',       [IoTController::class, 'location']);
     Route::post('location/batch', [IoTController::class, 'locationBatch']);
+});
+
+// Evidencias
+Route::prefix('evidence')->group(function () {
+    Route::get('/',              [EvidenceController::class, 'index']);
+    Route::post('/',             [EvidenceController::class, 'store']);
+    Route::get('/{id}/download', [EvidenceController::class, 'download']);
 });
