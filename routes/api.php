@@ -1,10 +1,15 @@
 <?php
 
-use App\Http\Controllers\Api\EvidenceController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CompanyController;
+use App\Http\Controllers\Api\DriverController;
+use App\Http\Controllers\Api\EvidenceController;
+use App\Http\Controllers\Api\IncidentEvidenceController;
 use App\Http\Controllers\Api\IoTController;
 use App\Http\Controllers\Api\ProtocolController;
 use App\Http\Controllers\Api\SafePointController;
+use App\Http\Controllers\Api\VehicleController;
+use App\Http\Controllers\Api\VehicleLocationController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Rutas públicas ───────────────────────────────────────────
@@ -26,7 +31,20 @@ Route::middleware('auth:sanctum')->group(function () {
         });
     });
 
-    // Protocolos
+    // Flota — Saul
+    Route::apiResource('companies', CompanyController::class);
+    Route::apiResource('drivers', DriverController::class);
+    Route::apiResource('vehicles', VehicleController::class);
+
+    Route::get('vehicles/{vehicle}/locations',      [VehicleLocationController::class, 'index']);
+    Route::post('vehicles/{vehicle}/locations',     [VehicleLocationController::class, 'store']);
+    Route::get('vehicles/{vehicle}/locations/last', [VehicleLocationController::class, 'last']);
+
+    Route::get('incidents/{incident}/evidences',    [IncidentEvidenceController::class, 'index']);
+    Route::post('incidents/{incident}/evidences',   [IncidentEvidenceController::class, 'store']);
+    Route::delete('incidents/{incident}/evidences/{evidence}', [IncidentEvidenceController::class, 'destroy']);
+
+    // Protocolos — Ana
     Route::prefix('protocols')->group(function () {
         Route::get('/',                           [ProtocolController::class, 'index']);
         Route::post('/',                          [ProtocolController::class, 'store']);
@@ -36,7 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/executions/{id}/motor-cut', [ProtocolController::class, 'motorCut']);
     });
 
-    // Puntos seguros
+    // Puntos seguros — Ana
     Route::prefix('safe-points')->group(function () {
         Route::get('/',        [SafePointController::class, 'index']);
         Route::post('/',       [SafePointController::class, 'store']);
@@ -46,6 +64,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [SafePointController::class, 'destroy']);
     });
 
+    // Evidencias — Ana
+    Route::prefix('evidence')->group(function () {
+        Route::get('/',              [EvidenceController::class, 'index']);
+        Route::post('/',             [EvidenceController::class, 'store']);
+        Route::get('/{id}/download', [EvidenceController::class, 'download']);
+    });
+
 });
 
 // ─── Rutas IoT — device token ─────────────────────────────────
@@ -53,11 +78,4 @@ Route::middleware('device.token')->prefix('iot')->group(function () {
     Route::post('audio-event',    [IoTController::class, 'audioEvent']);
     Route::post('location',       [IoTController::class, 'location']);
     Route::post('location/batch', [IoTController::class, 'locationBatch']);
-});
-
-// Evidencias
-Route::prefix('evidence')->group(function () {
-    Route::get('/',              [EvidenceController::class, 'index']);
-    Route::post('/',             [EvidenceController::class, 'store']);
-    Route::get('/{id}/download', [EvidenceController::class, 'download']);
 });

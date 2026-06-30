@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class Company extends Model
 {
     use HasUuids;
-
+    protected $keyType = 'string';
+    public $incrementing = false;
     // Campos que se pueden llenar masivamente
     protected $fillable = [
         'name',

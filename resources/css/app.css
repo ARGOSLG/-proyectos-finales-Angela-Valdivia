@@ -3,7 +3,15 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-argos-orange: #f97116;
+    --color-argos-dark: #272d35;
+    --color-argos-darker: #1a1e24;
+    --color-argos-white: #f9fafb;
+    --color-argos-blue: #2596be;
+    --color-argos-green: #378758;
 }

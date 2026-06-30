@@ -9,6 +9,9 @@ class Vehicle extends Model
 {
     use HasUuids;
 
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected $fillable = [
         'company_id',
         'driver_id',
