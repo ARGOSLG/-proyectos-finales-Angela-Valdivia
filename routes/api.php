@@ -31,7 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
         });
     });
 
-    // Flota — Saul
+    // Flota 
     Route::apiResource('companies', CompanyController::class);
     Route::apiResource('drivers', DriverController::class);
     Route::apiResource('vehicles', VehicleController::class);
@@ -44,7 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('incidents/{incident}/evidences',   [IncidentEvidenceController::class, 'store']);
     Route::delete('incidents/{incident}/evidences/{evidence}', [IncidentEvidenceController::class, 'destroy']);
 
-    // Protocolos — Ana
+    // Protocolos — 
     Route::prefix('protocols')->group(function () {
         Route::get('/',                           [ProtocolController::class, 'index']);
         Route::post('/',                          [ProtocolController::class, 'store']);
@@ -54,7 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/executions/{id}/motor-cut', [ProtocolController::class, 'motorCut']);
     });
 
-    // Puntos seguros — Ana
+    // Puntos seguros 
     Route::prefix('safe-points')->group(function () {
         Route::get('/',        [SafePointController::class, 'index']);
         Route::post('/',       [SafePointController::class, 'store']);
@@ -64,7 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [SafePointController::class, 'destroy']);
     });
 
-    // Evidencias — Ana
+    // Evidencias 
     Route::prefix('evidence')->group(function () {
         Route::get('/',              [EvidenceController::class, 'index']);
         Route::post('/',             [EvidenceController::class, 'store']);

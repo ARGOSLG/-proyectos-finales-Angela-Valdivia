@@ -9,16 +9,20 @@ class EvidenceFile extends Model
 {
     use HasUuids;
 
-    protected $fillable = [
-        'incident_id',
-        'alert_id',
-        'file_path',
-        'file_type',
-        'duration_seconds',
-        'camera_label',
-        'sync_status',
-        'recorded_at',
-    ];
+  protected $fillable = [
+    'incident_id',
+    'alert_id',
+    'file_path',
+    'file_type',
+    'duration_seconds',
+    'camera_label',
+    'sync_status',
+    'recorded_at',
+    'uploaded_by',
+    'original_name',
+    'mime_type',
+    'size_bytes',
+];
 
     protected $casts = [
         'recorded_at' => 'datetime',
@@ -33,4 +37,8 @@ class EvidenceFile extends Model
     {
         return $this->belongsTo(Alert::class);
     }
+    public function uploadedBy()
+{
+    return $this->belongsTo(User::class, 'uploaded_by');
+}
 }
