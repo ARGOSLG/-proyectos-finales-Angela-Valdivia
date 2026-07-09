@@ -39,5 +39,8 @@ return [
     'token'          => env('TWILIO_AUTH_TOKEN'),
     'whatsapp_from'  => env('TWILIO_WHATSAPP_FROM'),
 ],
+'google' => [
+    'vision_key' => env('GOOGLE_VISION_API_KEY'),
+],
 
 ];

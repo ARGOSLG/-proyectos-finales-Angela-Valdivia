@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\SafePointController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\VehicleLocationController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\CameraController;
 
 // ─── Rutas públicas ───────────────────────────────────────────
 Route::prefix('auth')->group(function () {
@@ -75,6 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // ─── Rutas IoT — device token ─────────────────────────────────
 Route::middleware('device.token')->prefix('iot')->group(function () {
+    Route::post('camera', [CameraController::class, 'analyze']);
     Route::post('audio-event',    [IoTController::class, 'audioEvent']);
     Route::post('location',       [IoTController::class, 'location']);
     Route::post('location/batch', [IoTController::class, 'locationBatch']);
