@@ -15,7 +15,9 @@ class AuditLog extends Model
     // Los logs nunca se modifican — solo created_at
     public $timestamps = false;
     
-    protected $fillable = [
+    protected $fillable = [  
+         
+          
         'user_id',
         'action',
         'table_name',

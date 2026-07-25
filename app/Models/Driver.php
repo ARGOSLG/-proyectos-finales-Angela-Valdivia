@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Laravel\Sanctum\HasApiTokens;
 
 class Driver extends Model
 {
     use HasUuids;
-
+    use HasApiTokens, HasUuids;
+    
     protected $keyType = 'string';
     public $incrementing = false;
 
@@ -21,8 +23,12 @@ class Driver extends Model
         'emergency_contact_name',
         'emergency_contact_phone',
         'status',
+        'password',
+        'nfc_token'
     ];
-
+         protected $casts = [
+         'password'=>'hashed',
+];
     // ─── Relaciones ───────────────────────────────────────────
 
     // Un conductor pertenece a una empresa

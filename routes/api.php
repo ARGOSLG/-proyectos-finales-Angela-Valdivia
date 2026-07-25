@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CameraController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DriverController;
 use App\Http\Controllers\Api\EvidenceController;
@@ -10,8 +11,9 @@ use App\Http\Controllers\Api\ProtocolController;
 use App\Http\Controllers\Api\SafePointController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\VehicleLocationController;
+use App\Http\Controllers\Api\Dimas\AuthController as DimasAuthController;
+use App\Http\Controllers\Api\Dimas\EmergencyController as DimasEmergencyController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\CameraController;
 
 // ─── Rutas públicas ───────────────────────────────────────────
 Route::prefix('auth')->group(function () {
@@ -21,21 +23,19 @@ Route::prefix('auth')->group(function () {
 // ─── Rutas protegidas con token ───────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Auth
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('auth/me',      [AuthController::class, 'me']);
 
-    // Solo admin
     Route::middleware('role:admin')->group(function () {
         Route::get('admin/test', function () {
             return response()->json(['message' => 'Eres admin, tienes acceso']);
         });
     });
 
-    // Flota 
+    // Flota
     Route::apiResource('companies', CompanyController::class);
-    Route::apiResource('drivers', DriverController::class);
-    Route::apiResource('vehicles', VehicleController::class);
+    Route::apiResource('drivers',   DriverController::class);
+    Route::apiResource('vehicles',  VehicleController::class);
 
     Route::get('vehicles/{vehicle}/locations',      [VehicleLocationController::class, 'index']);
     Route::post('vehicles/{vehicle}/locations',     [VehicleLocationController::class, 'store']);
@@ -45,7 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('incidents/{incident}/evidences',   [IncidentEvidenceController::class, 'store']);
     Route::delete('incidents/{incident}/evidences/{evidence}', [IncidentEvidenceController::class, 'destroy']);
 
-    // Protocolos — 
+    // Protocolos
     Route::prefix('protocols')->group(function () {
         Route::get('/',                           [ProtocolController::class, 'index']);
         Route::post('/',                          [ProtocolController::class, 'store']);
@@ -55,7 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/executions/{id}/motor-cut', [ProtocolController::class, 'motorCut']);
     });
 
-    // Puntos seguros 
+    // Puntos seguros
     Route::prefix('safe-points')->group(function () {
         Route::get('/',        [SafePointController::class, 'index']);
         Route::post('/',       [SafePointController::class, 'store']);
@@ -65,7 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}', [SafePointController::class, 'destroy']);
     });
 
-    // Evidencias 
+    // Evidencias
     Route::prefix('evidence')->group(function () {
         Route::get('/',              [EvidenceController::class, 'index']);
         Route::post('/',             [EvidenceController::class, 'store']);
@@ -76,8 +76,28 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // ─── Rutas IoT — device token ─────────────────────────────────
 Route::middleware('device.token')->prefix('iot')->group(function () {
-    Route::post('camera', [CameraController::class, 'analyze']);
+    Route::post('camera',         [CameraController::class, 'analyze']);
     Route::post('audio-event',    [IoTController::class, 'audioEvent']);
     Route::post('location',       [IoTController::class, 'location']);
     Route::post('location/batch', [IoTController::class, 'locationBatch']);
+});
+
+// ─── Rutas DIMAS — App del conductor ─────────────────────────
+Route::prefix('dimas')->group(function () {
+
+    // Públicas — login
+    Route::post('login',     [DimasAuthController::class, 'login']);
+    Route::post('login-nfc', [DimasAuthController::class, 'loginNfc']);
+
+    // Protegidas — requieren token del conductor
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('logout',  [DimasAuthController::class, 'logout']);
+        Route::get('perfil',   [DimasAuthController::class, 'perfil']);
+
+        // Emergencias
+        Route::post('emergencia',                 [DimasEmergencyController::class, 'sos']);
+        Route::post('auxilio-vial',               [DimasEmergencyController::class, 'auxilioVial']);
+        Route::post('auxilio-vial/{id}/cancelar', [DimasEmergencyController::class, 'cancelarAuxilio']);
+    });
+
 });

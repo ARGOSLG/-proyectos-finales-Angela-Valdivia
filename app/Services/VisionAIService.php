@@ -23,7 +23,7 @@ class VisionAIService
     public function analyzeDriverImage(string $fileData, Vehicle $vehicle): ?Alert
     {
         try {
-            // Convertir binario directo a base64 (Adiós file_get_contents de disco)
+            // Convertir binario directo a base64
             $imageData = base64_encode($fileData);
 
             // Llamar a Google Vision API
@@ -52,7 +52,7 @@ class VisionAIService
 
             $result = $response->json();
             
-            // ⚠️ TEMPORAL PARA POSTMAN: Forzamos el volcado para ver qué detecta Google
+            // TEMPORAL PARA POSTMAN: Forzamos el volcado para ver qué detecta Google
             dd($result);
 
             Log::info('Google Vision response: ' . json_encode($result));

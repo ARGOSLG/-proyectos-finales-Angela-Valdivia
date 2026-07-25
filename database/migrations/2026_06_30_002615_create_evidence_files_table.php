@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('camera_label')->nullable();
             $table->enum('sync_status', ['pending', 'synced', 'failed'])->default('synced');
             $table->timestamp('recorded_at');
-
+            
             $table->index(['incident_id', 'file_type']);
 
             $table->timestamps();
