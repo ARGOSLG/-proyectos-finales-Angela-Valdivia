@@ -51,7 +51,7 @@ class AuditLog extends Model
         string $ipAddress = null
     ): void {
         self::create([
-            'user_id'    => auth()->id(),
+            'user_id' => null, 
             'action'     => $action,
             'table_name' => $tableName,
             'record_id'  => $recordId,

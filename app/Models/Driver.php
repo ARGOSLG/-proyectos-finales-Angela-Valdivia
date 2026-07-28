@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Laravel\Sanctum\HasApiTokens;
 
-class Driver extends Model
+
+class Driver extends Authenticatable
 {
     use HasUuids;
     use HasApiTokens, HasUuids;
@@ -28,6 +29,7 @@ class Driver extends Model
     ];
          protected $casts = [
          'password'=>'hashed',
+         'nfc_token'=>'string',
 ];
     // ─── Relaciones ───────────────────────────────────────────
 
