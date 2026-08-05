@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\VehicleLocationController;
 use App\Http\Controllers\Api\Dimas\AuthController as DimasAuthController;
 use App\Http\Controllers\Api\Dimas\EmergencyController as DimasEmergencyController;
+use App\Http\Controllers\Api\Dimas\ReporteController as DimasReporteController; 
 use Illuminate\Support\Facades\Route;
 
 // ─── Rutas públicas ───────────────────────────────────────────
@@ -26,7 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('auth/me',      [AuthController::class, 'me']);
 
-    Route::middleware('role:admin')->group(function () {
+    Route::middleware(['role:admin'])->group(function () {
         Route::get('admin/test', function () {
             return response()->json(['message' => 'Eres admin, tienes acceso']);
         });
@@ -72,7 +73,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/download', [EvidenceController::class, 'download']);
     });
 
-});
+}); 
+
 
 // ─── Rutas IoT — device token ─────────────────────────────────
 Route::middleware('device.token')->prefix('iot')->group(function () {
@@ -81,6 +83,7 @@ Route::middleware('device.token')->prefix('iot')->group(function () {
     Route::post('location',       [IoTController::class, 'location']);
     Route::post('location/batch', [IoTController::class, 'locationBatch']);
 });
+
 
 // ─── Rutas DIMAS — App del conductor ─────────────────────────
 Route::prefix('dimas')->group(function () {
@@ -98,6 +101,13 @@ Route::prefix('dimas')->group(function () {
         Route::post('emergencia',                 [DimasEmergencyController::class, 'sos']);
         Route::post('auxilio-vial',               [DimasEmergencyController::class, 'auxilioVial']);
         Route::post('auxilio-vial/{id}/cancelar', [DimasEmergencyController::class, 'cancelarAuxilio']);
+        
+        // Reportes
+        Route::post('reportes',              [DimasReporteController::class, 'store']);
+        Route::get('reportes',               [DimasReporteController::class, 'index']);
+        Route::get('reportes/{id}',          [DimasReporteController::class, 'show']);
+        Route::post('reportes/{id}/cancelar',[DimasReporteController::class, 'cancelar']);
+        Route::patch('dimas/reportes/{id}/estado', [DimasReporteController::class, 'actualizarEstado']);
     });
 
 });
