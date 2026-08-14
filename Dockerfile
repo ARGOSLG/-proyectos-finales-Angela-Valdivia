@@ -2,7 +2,7 @@ FROM php:8.4-fpm
 
 RUN apt-get update && apt-get install -y \
     git curl unzip libpq-dev libzip-dev \
-    libonig-dev libxml2-dev nginx supervisor \
+    libonig-dev libxml2-dev nginx supervisor gettext-base \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-install \
