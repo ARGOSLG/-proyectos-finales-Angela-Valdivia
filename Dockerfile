@@ -2,7 +2,7 @@ FROM php:8.4-fpm
 
 RUN apt-get update && apt-get install -y \
     git curl unzip libpq-dev libzip-dev \
-    libonig-dev libxml2-dev nginx \
+    libonig-dev libxml2-dev nginx supervisor \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-install \
@@ -22,7 +22,10 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY supervisor/argos.conf /etc/supervisor/conf.d/argos.conf
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 80
 
-CMD ["/bin/bash", "-c", "php artisan migrate --force && php artisan config:cache && php artisan route:cache && service nginx start && php-fpm -F"]
+CMD ["/entrypoint.sh"]
