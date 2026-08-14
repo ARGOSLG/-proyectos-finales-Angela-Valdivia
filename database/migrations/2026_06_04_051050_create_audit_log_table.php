@@ -35,7 +35,7 @@ return new class extends Migration
             $table->string('hash', 64)->nullable();
 
              // SHA256 del registro para evidencia legal
-            $table->string('hash', 64)->nullable(); 
+           
 
             // Índices para búsquedas en la bitácora
             $table->index(['user_id', 'created_at']);
