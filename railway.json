@@ -5,7 +5,6 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "/bin/bash -c 'php artisan migrate --force && nginx -g \"daemon off;\" & php-fpm'",
     "healthcheckPath": "/up",
     "healthcheckTimeout": 60,
     "restartPolicyType": "ON_FAILURE"
