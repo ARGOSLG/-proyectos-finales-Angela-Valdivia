@@ -27,4 +27,4 @@ COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
-CMD bash -c "php artisan migrate --force && php artisan config:cache && php artisan route:cache && nginx -g 'daemon off;' & php-fpm"
+CMD ["/bin/bash", "-c", "php artisan migrate --force && php artisan config:cache && php artisan route:cache && nginx -g 'daemon off;' & php-fpm -F"]
