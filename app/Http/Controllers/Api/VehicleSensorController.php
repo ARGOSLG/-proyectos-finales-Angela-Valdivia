@@ -24,6 +24,21 @@ class VehicleSensorController extends Controller
 
         $request->device->markAsSeen();
 
+        app(\App\Services\GoldenRuleService::class)->evaluate($request->device->vehicle);
+
         return response()->json($sensor, 201);
+    }
+
+    public function index(\App\Models\Vehicle $vehicle)
+    {
+        $latest = VehicleSensor::where('vehicle_id', $vehicle->id)
+            ->latest('recorded_at')
+            ->first();
+
+        if (!$latest) {
+            return response()->json(['message' => 'No hay lecturas de sensores para este vehículo'], 404);
+        }
+
+        return response()->json($latest);
     }
 }

@@ -53,7 +53,7 @@ class VisionAIService
             $result = $response->json();
             
             // TEMPORAL PARA POSTMAN: Forzamos el volcado para ver qué detecta Google
-            dd($result);
+           // dd($result);
 
             Log::info('Google Vision response: ' . json_encode($result));
             return $this->processVisionResult($result, $vehicle);
