@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\VehicleLocationController;
 use App\Http\Controllers\Api\Dimas\AuthController as DimasAuthController;
 use App\Http\Controllers\Api\Dimas\EmergencyController as DimasEmergencyController;
 use App\Http\Controllers\Api\Dimas\ReporteController as DimasReporteController; 
+use App\Http\Controllers\Api\VehicleSensorController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Rutas públicas ───────────────────────────────────────────
@@ -39,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('vehicles',  VehicleController::class);
 
     Route::get('vehicles/{vehicle}/locations',      [VehicleLocationController::class, 'index']);
+    Route::get('vehicles/{vehicle}/sensors', [VehicleSensorController::class, 'index']);
     Route::post('vehicles/{vehicle}/locations',     [VehicleLocationController::class, 'store']);
     Route::get('vehicles/{vehicle}/locations/last', [VehicleLocationController::class, 'last']);
 
@@ -82,6 +84,8 @@ Route::middleware('device.token')->prefix('iot')->group(function () {
     Route::post('audio-event',    [IoTController::class, 'audioEvent']);
     Route::post('location',       [IoTController::class, 'location']);
     Route::post('location/batch', [IoTController::class, 'locationBatch']);
+    Route::post('sensors',        [VehicleSensorController::class, 'store']);
+
 });
 
 
