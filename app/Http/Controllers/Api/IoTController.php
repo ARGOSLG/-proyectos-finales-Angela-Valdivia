@@ -86,100 +86,104 @@ class IoTController extends Controller
      * POST /api/iot/location
      * Header: X-Device-Token: {token}
      */
-    public function location(Request $request)
-    {
-        // 1. Validar datos del GPS
-        $request->validate([
-            'lat'         => 'required|numeric',
-            'lng'         => 'required|numeric',
-            'speed_kmh'   => 'nullable|numeric',
-            'heading'     => 'nullable|numeric',
-            'accuracy_m'  => 'nullable|numeric',
-            'carrier'     => 'nullable|string',   // telcel/att/movistar
-            'signal_dbm'  => 'nullable|integer',
-            'recorded_at' => 'nullable|date',     // fecha real del dispositivo
+   public function location(Request $request)
+{
+    // 1. Validar datos del GPS
+    $request->validate([
+        'lat'         => 'required|numeric',
+        'lng'         => 'required|numeric',
+        'speed_kmh'   => 'nullable|numeric',
+        'heading'     => 'nullable|numeric',
+        'accuracy_m'  => 'nullable|numeric',
+        'carrier'     => 'nullable|string',
+        'signal_dbm'  => 'nullable|integer',
+        'ignition'    => 'nullable|boolean',
+        'recorded_at' => 'nullable|date',
+    ]);
+
+    $device  = $request->device;
+    $vehicle = $device->vehicle;
+
+    // 2. Guardar en historial de ubicaciones
+    VehicleLocation::create([
+        'vehicle_id'  => $vehicle->id,
+        'lat'         => $request->lat,
+        'lng'         => $request->lng,
+        'speed_kmh'   => $request->speed_kmh,
+        'heading'     => $request->heading,
+        'accuracy_m'  => $request->accuracy_m,
+        'carrier'     => $request->carrier,
+        'signal_dbm'  => $request->signal_dbm,
+        'ignition'    => $request->ignition,
+        'recorded_at' => $request->recorded_at ?? now(),
+    ]);
+
+    // 3. Actualizar posición actual del vehículo
+    $vehicle->update([
+        'lat'         => $request->lat,
+        'lng'         => $request->lng,
+        'location_at' => now(),
+    ]);
+
+    // 4. Actualizar last_seen del dispositivo
+    $device->markAsSeen();
+
+    // 5. Verificar si la velocidad es excesiva — alerta automática
+    if ($request->speed_kmh && $request->speed_kmh > 120) {
+        Alert::create([
+            'company_id' => $vehicle->company_id,
+            'driver_id'  => $vehicle->driver_id,
+            'vehicle_id' => $vehicle->id,
+            'type'       => 'speeding',
+            'severity'   => $request->speed_kmh > 140 ? 'critical' : 'warning',
+            'source'     => 'gps_module',
+            'metadata'   => [
+                'speed_kmh' => $request->speed_kmh,
+                'lat'       => $request->lat,
+                'lng'       => $request->lng,
+            ],
+            'status' => 'active',
         ]);
+    }
 
-        $device  = $request->device;
-        $vehicle = $device->vehicle;
+    // 6. Verificar frenada brusca
+    if ($request->speed_kmh !== null) {
+        $lastLocation = VehicleLocation::where('vehicle_id', $vehicle->id)
+            ->orderByDesc('recorded_at')
+            ->skip(1)
+            ->first();
 
-        // 2. Guardar en historial de ubicaciones
-        VehicleLocation::create([
-            'vehicle_id'  => $vehicle->id,
-            'lat'         => $request->lat,
-            'lng'         => $request->lng,
-            'speed_kmh'   => $request->speed_kmh,
-            'heading'     => $request->heading,
-            'accuracy_m'  => $request->accuracy_m,
-            'carrier'     => $request->carrier,
-            'signal_dbm'  => $request->signal_dbm,
-            // Si viene fecha del dispositivo la usamos, si no usamos ahora
-            'recorded_at' => $request->recorded_at ?? now(),
-        ]);
+        if ($lastLocation && $lastLocation->speed_kmh !== null) {
+            $speedDrop = $lastLocation->speed_kmh - $request->speed_kmh;
 
-        // 3. Actualizar posición actual del vehículo
-        $vehicle->update([
-            'lat'         => $request->lat,
-            'lng'         => $request->lng,
-            'location_at' => now(),
-        ]);
-
-        // 4. Actualizar last_seen del dispositivo
-        $device->markAsSeen();
-
-        // 5. Verificar si la velocidad es excesiva — alerta automática
-        if ($request->speed_kmh && $request->speed_kmh > 120) {
-            Alert::create([
-                'company_id' => $vehicle->company_id,
-                'driver_id'  => $vehicle->driver_id,
-                'vehicle_id' => $vehicle->id,
-                'type'       => 'speeding',
-                'severity'   => $request->speed_kmh > 140 ? 'critical' : 'warning',
-                'source'     => 'gps_module',
-                'metadata'   => [
-                    'speed_kmh' => $request->speed_kmh,
-                    'lat'       => $request->lat,
-                    'lng'       => $request->lng,
-                ],
-                'status' => 'active',
-            ]);
-        }
-
-        // 6. Verificar frenada brusca — comparar con última velocidad registrada
-        if ($request->speed_kmh !== null) {
-            $lastLocation = VehicleLocation::where('vehicle_id', $vehicle->id)
-                ->orderByDesc('recorded_at')
-                ->skip(1)
-                ->first();
-
-            if ($lastLocation && $lastLocation->speed_kmh !== null) {
-                $speedDrop = $lastLocation->speed_kmh - $request->speed_kmh;
-
-                if ($speedDrop >= 30) {
-                    Alert::create([
-                        'company_id' => $vehicle->company_id,
-                        'driver_id'  => $vehicle->driver_id,
-                        'vehicle_id' => $vehicle->id,
-                        'type'       => 'harsh_braking',
-                        'severity'   => $speedDrop >= 50 ? 'critical' : 'warning',
-                        'source'     => 'gps_module',
-                        'metadata'   => [
-                            'speed_before_kmh' => $lastLocation->speed_kmh,
-                            'speed_after_kmh'  => $request->speed_kmh,
-                            'speed_drop_kmh'   => $speedDrop,
-                            'lat'              => $request->lat,
-                            'lng'              => $request->lng,
-                        ],
-                        'status' => 'active',
-                    ]);
-                }
+            if ($speedDrop >= 30) {
+                Alert::create([
+                    'company_id' => $vehicle->company_id,
+                    'driver_id'  => $vehicle->driver_id,
+                    'vehicle_id' => $vehicle->id,
+                    'type'       => 'harsh_braking',
+                    'severity'   => $speedDrop >= 50 ? 'critical' : 'warning',
+                    'source'     => 'gps_module',
+                    'metadata'   => [
+                        'speed_before_kmh' => $lastLocation->speed_kmh,
+                        'speed_after_kmh'  => $request->speed_kmh,
+                        'speed_drop_kmh'   => $speedDrop,
+                        'lat'              => $request->lat,
+                        'lng'              => $request->lng,
+                    ],
+                    'status' => 'active',
+                ]);
             }
         }
-
-        return response()->json([
-            'message' => 'Ubicación registrada',
-        ], 201);
     }
+
+    // 7. Regla de Oro — correlaciona esta ubicación con el estado de los sensores
+    app(\App\Services\GoldenRuleService::class)->evaluate($vehicle);
+
+    return response()->json([
+        'message' => 'Ubicación registrada',
+    ], 201);
+}
 
     /**
      * BATCH LOCATION — Envío de ubicaciones guardadas offline
