@@ -19,6 +19,7 @@ class VehicleLocationController extends Controller
             'speed_kmh'   => 'nullable|numeric|min:0',
             'heading'     => 'nullable|numeric|between:0,360',
             'accuracy_m'  => 'nullable|numeric|min:0',
+            'ignition'    => 'nullable|boolean',
             'carrier'     => 'nullable|string|max:50',
             'signal_dbm'  => 'nullable|integer',
             'recorded_at' => 'nullable|date',
