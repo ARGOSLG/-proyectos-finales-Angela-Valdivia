@@ -47,7 +47,7 @@ class GoldenRuleService
             'vehicle_id' => $vehicle->id,
             'type'       => $type,
             'severity'   => $severity,
-            'source'     => 'golden_rule',
+            'source'     => 'system',
             'metadata'   => array_merge($metadata, ['description' => $description]),
             'status'     => 'active',
         ]);
