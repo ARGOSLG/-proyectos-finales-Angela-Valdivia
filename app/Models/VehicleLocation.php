@@ -12,29 +12,30 @@ class VehicleLocation extends Model
     // Esta tabla no tiene updated_at — los registros GPS nunca se modifican
     public $timestamps = false;
 
-    protected $fillable = [
-        'vehicle_id',
-        'lat',
-        'lng',
-        'speed_kmh',
-        'heading',
-        'accuracy_m',
-        'carrier',
-        'signal_dbm',
-        'recorded_at',
-    ];
+   protected $fillable = [
+    'vehicle_id',
+    'lat',
+    'lng',
+    'speed_kmh',
+    'heading',
+    'accuracy_m',
+    'ignition',
+    'carrier',
+    'signal_dbm',
+    'recorded_at',
+];
 
-    protected $casts = [
-        'lat'         => 'float',
-        'lng'         => 'float',
-        'speed_kmh'   => 'float',
-        'heading'     => 'float',
-        'accuracy_m'  => 'float',
-        'signal_dbm'  => 'integer',
-        'recorded_at' => 'datetime',
-    ];
+protected $casts = [
+    'lat'         => 'float',
+    'lng'         => 'float',
+    'speed_kmh'   => 'float',
+    'heading'     => 'float',
+    'accuracy_m'  => 'float',
+    'ignition'    => 'boolean',
+    'signal_dbm'  => 'integer',
+    'recorded_at' => 'datetime',
+];
 
-    // ─── Relaciones ───────────────────────────────────────────
 
     // Una ubicación pertenece a un vehículo
     public function vehicle()
@@ -42,7 +43,7 @@ class VehicleLocation extends Model
         return $this->belongsTo(Vehicle::class);
     }
 
-    // ─── Scopes — filtros reutilizables ───────────────────────
+    
 
     // Obtener las últimas N ubicaciones de un vehículo
     public function scopeRecent($query, int $limit = 100)
