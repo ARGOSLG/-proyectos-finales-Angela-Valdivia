@@ -3,13 +3,13 @@
 namespace App\Events;
 
 use App\Models\Alert;
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AlertCreated implements ShouldBroadcast
+class AlertCreated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -24,8 +24,8 @@ class AlertCreated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            // Canal privado por empresa — solo operadores de esa empresa lo ven
-            new Channel('company.' . $this->alert->company_id),
+            // Canal privado por empresa — solo operadores autenticados de esa empresa lo ven
+            new PrivateChannel('company.' . $this->alert->company_id),
         ];
     }
 
