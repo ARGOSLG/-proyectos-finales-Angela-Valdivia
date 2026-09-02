@@ -9,7 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Driver extends Authenticatable
 {
-    use HasUuids;
+    
     use HasApiTokens, HasUuids;
     
     protected $keyType = 'string';

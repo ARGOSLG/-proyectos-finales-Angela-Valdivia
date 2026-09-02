@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api\Dimas;
 
 use App\Events\AlertCreated;
+use App\Events\ReporteActualizado;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessAlert;
 use App\Models\Alert;
 use App\Models\Reporte;
 use Illuminate\Http\Request;
-use App\Events\ReporteActualizado;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ReporteController extends Controller
 {
@@ -27,47 +29,56 @@ class ReporteController extends Controller
         ]);
 
         $driver = $request->user();
-        $vehicle = $driver->vehicles()->where('status', 'on_route')->first();
 
-        // 1. Crear alerta para el panel admin
-        $alert = Alert::create([
-            'company_id' => $driver->company_id,
-            'driver_id'  => $driver->id,
-            'vehicle_id' => $vehicle?->id,
-            'type'       => $request->tipo === 'emergencia' ? 'sos_button' : 'manual',
-            'severity'   => $request->tipo === 'emergencia' ? 'critical' : 'warning',
-            'source'     => 'manual',
-            'metadata'   => array_merge($request->metadata ?? [], [
+        // Buscar vehículo en ruta o el primero asignado
+        $vehicle = $driver->vehicles()->where('status', 'on_route')->first() 
+                ?? $driver->vehicles()->first();
+
+        return DB::transaction(function () use ($request, $driver, $vehicle) {
+            // 1. Crear alerta para el panel admin
+            $alert = Alert::create([
+                'company_id' => $driver->company_id,
+                'driver_id'  => $driver->id,
+                'vehicle_id' => $vehicle?->id,
+                'type'       => $request->tipo === 'emergencia' ? 'sos_button' : 'manual',
+                'severity'   => $request->tipo === 'emergencia' ? 'critical' : 'warning',
+                'source'     => 'manual',
+                'metadata'   => array_merge($request->metadata ?? [], [
+                    'lat'         => $request->lat,
+                    'lng'         => $request->lng,
+                    'description' => $request->description,
+                    'trigger'     => 'dimas_app',
+                ]),
+                'status' => 'active',
+            ]);
+
+            // 2. Crear reporte del conductor
+            $reporte = Reporte::create([
+                'driver_id'   => $driver->id,
+                'alert_id'    => $alert->id,
+                'tipo'        => $request->tipo,
+                'estado'      => 'enviado',
                 'lat'         => $request->lat,
                 'lng'         => $request->lng,
                 'description' => $request->description,
-                'trigger'     => 'dimas_app',
-            ]),
-            'status' => 'active',
-        ]);
+                'metadata'    => $request->metadata,
+            ]);
 
-        // 2. Crear reporte del conductor vinculado a la alerta
-        $reporte = Reporte::create([
-            'driver_id'   => $driver->id,
-            'alert_id'    => $alert->id,
-            'tipo'        => $request->tipo,
-            'estado'      => 'enviado',
-            'lat'         => $request->lat,
-            'lng'         => $request->lng,
-            'description' => $request->description,
-            'metadata'    => $request->metadata,
-        ]);
+            // 3. Notificar en segundo plano (protegido contra fallos de Broadcast/Redis)
+            try {
+                ProcessAlert::dispatch($alert);
+                AlertCreated::dispatch($alert->load('vehicle', 'driver'));
+            } catch (\Throwable $e) {
+                Log::error('Error al emitir eventos de alerta: ' . $e->getMessage());
+            }
 
-        // 3. Notificar panel admin por WhatsApp y WebSocket
-        ProcessAlert::dispatch($alert);
-        AlertCreated::dispatch($alert->load('vehicle', 'driver'));
-
-        return response()->json([
-            'message'    => 'Reporte enviado correctamente',
-            'reporte_id' => $reporte->id,
-            'alert_id'   => $alert->id,
-            'estado'     => $reporte->estado,
-        ], 201);
+            return response()->json([
+                'message'    => 'Reporte enviado correctamente',
+                'reporte_id' => $reporte->id,
+                'alert_id'   => $alert->id,
+                'estado'     => $reporte->estado,
+            ], 201);
+        });
     }
 
     /**
@@ -77,8 +88,8 @@ class ReporteController extends Controller
     public function show(Request $request, string $id)
     {
         $reporte = Reporte::where('driver_id', $request->user()->id)
-                          ->with('alert')
-                          ->findOrFail($id);
+            ->with('alert')
+            ->findOrFail($id);
 
         return response()->json($reporte);
     }
@@ -90,12 +101,12 @@ class ReporteController extends Controller
     public function cancelar(Request $request, string $id)
     {
         $reporte = Reporte::where('driver_id', $request->user()->id)
-                          ->findOrFail($id);
+            ->findOrFail($id);
+            
         $reporte->update(['estado' => 'cancelado']);
 
         ReporteActualizado::dispatch($reporte);
 
-        // Resolver también la alerta
         if ($reporte->alert) {
             $reporte->alert->update([
                 'status'      => 'resolved',
@@ -115,10 +126,24 @@ class ReporteController extends Controller
     public function index(Request $request)
     {
         $reportes = Reporte::where('driver_id', $request->user()->id)
-                           ->orderByDesc('created_at')
-                           ->paginate(20);
+            ->orderByDesc('created_at')
+            ->paginate(20);
 
         return response()->json($reportes);
+    }
+
+    /**
+     * Obtener reporte activo del conductor
+     * GET /api/dimas/reportes/activo
+     */
+    public function reporteActivo(Request $request)
+    {
+        $reporte = Reporte::where('driver_id', $request->user()->id)
+            ->whereNotIn('estado', ['cancelado', 'finalizado', 'resuelto'])
+            ->latest()
+            ->first();
+
+        return response()->json($reporte);
     }
 
     /**
@@ -131,11 +156,11 @@ class ReporteController extends Controller
             'estado' => 'required|in:enviado,confirmado,en_progreso,resuelto,cancelado',
         ]);
 
-        $reporte = Reporte::findOrFail($id);
+        $reporte = Reporte::where('driver_id', $request->user()->id)
+            ->findOrFail($id);
 
         $reporte->update(['estado' => $request->estado]);
 
-        // Notificar al conductor en tiempo real via WebSocket
         ReporteActualizado::dispatch($reporte);
 
         return response()->json([

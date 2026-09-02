@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\VehicleLocationController;
 use App\Http\Controllers\Api\Dimas\AuthController as DimasAuthController;
 use App\Http\Controllers\Api\Dimas\EmergencyController as DimasEmergencyController;
-use App\Http\Controllers\Api\Dimas\ReporteController as DimasReporteController; 
+use App\Http\Controllers\Api\Dimas\ReporteController as DimasReporteController;
 use App\Http\Controllers\Api\VehicleSensorController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,48 +34,93 @@ Route::middleware('auth:sanctum')->group(function () {
         });
     });
 
-    // Flota
-    Route::apiResource('companies', CompanyController::class);
-    Route::apiResource('drivers',   DriverController::class);
-    Route::apiResource('vehicles',  VehicleController::class);
+    Route::middleware(['role:admin,supervisor'])->group(function () {
+        Route::get('companies',            [CompanyController::class, 'index']);
+        Route::get('companies/{company}',  [CompanyController::class, 'show']);
+    });
+    Route::middleware(['role:admin'])->group(function () {
+        Route::post('companies',              [CompanyController::class, 'store']);
+        Route::put('companies/{company}',     [CompanyController::class, 'update']);
+        Route::patch('companies/{company}',   [CompanyController::class, 'update']);
+        Route::delete('companies/{company}',  [CompanyController::class, 'destroy']);
+    });
 
+ 
+    Route::apiResource('drivers', DriverController::class);
+
+    // ── Vehicles: admin CRUD completo, supervisor CRUD sin borrar, operator lectura + actualizar ──
+    Route::middleware(['role:admin,supervisor,operator'])->group(function () {
+        Route::get('vehicles',             [VehicleController::class, 'index']);
+        Route::get('vehicles/{vehicle}',   [VehicleController::class, 'show']);
+    });
+    Route::middleware(['role:admin,supervisor'])->group(function () {
+        Route::post('vehicles',            [VehicleController::class, 'store']);
+    });
+    Route::middleware(['role:admin,supervisor,operator'])->group(function () {
+       
+        Route::put('vehicles/{vehicle}',   [VehicleController::class, 'update']);
+        Route::patch('vehicles/{vehicle}', [VehicleController::class, 'update']);
+    });
+    Route::middleware(['role:admin'])->group(function () {
+        Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy']);
+    });
+
+    // Telemetría / sensores del vehículo 
     Route::get('vehicles/{vehicle}/locations',      [VehicleLocationController::class, 'index']);
-    Route::get('vehicles/{vehicle}/sensors', [VehicleSensorController::class, 'index']);
+    Route::get('vehicles/{vehicle}/sensors',        [VehicleSensorController::class, 'index']);
     Route::post('vehicles/{vehicle}/locations',     [VehicleLocationController::class, 'store']);
     Route::get('vehicles/{vehicle}/locations/last', [VehicleLocationController::class, 'last']);
 
     Route::get('incidents/{incident}/evidences',    [IncidentEvidenceController::class, 'index']);
-    Route::post('incidents/{incident}/evidences',   [IncidentEvidenceController::class, 'store']);
-    Route::delete('incidents/{incident}/evidences/{evidence}', [IncidentEvidenceController::class, 'destroy']);
+    Route::middleware(['role:admin,supervisor'])->group(function () {
+        Route::post('incidents/{incident}/evidences',   [IncidentEvidenceController::class, 'store']);
+    });
+    Route::middleware(['role:admin'])->group(function () {
+        Route::delete('incidents/{incident}/evidences/{evidence}', [IncidentEvidenceController::class, 'destroy']);
+    });
 
-    // Protocolos
+    // ── Protocolos: admin + supervisor CRUD, operator solo lectura ──
     Route::prefix('protocols')->group(function () {
-        Route::get('/',                           [ProtocolController::class, 'index']);
-        Route::post('/',                          [ProtocolController::class, 'store']);
-        Route::get('/{id}',                       [ProtocolController::class, 'show']);
-        Route::post('/{id}/execute',              [ProtocolController::class, 'execute']);
-        Route::patch('/executions/{id}/step',     [ProtocolController::class, 'updateStep']);
-        Route::post('/executions/{id}/motor-cut', [ProtocolController::class, 'motorCut']);
+        Route::middleware(['role:admin,supervisor,operator'])->group(function () {
+            Route::get('/',     [ProtocolController::class, 'index']);
+            Route::get('/{id}', [ProtocolController::class, 'show']);
+        });
+        Route::middleware(['role:admin,supervisor'])->group(function () {
+            Route::post('/',                          [ProtocolController::class, 'store']);
+            Route::post('/{id}/execute',              [ProtocolController::class, 'execute']);
+            Route::patch('/executions/{id}/step',     [ProtocolController::class, 'updateStep']);
+            Route::post('/executions/{id}/motor-cut', [ProtocolController::class, 'motorCut']);
+        });
     });
 
-    // Puntos seguros
+    // ── Puntos seguros: admin + supervisor CRUD, operator solo lectura ──
     Route::prefix('safe-points')->group(function () {
-        Route::get('/',        [SafePointController::class, 'index']);
-        Route::post('/',       [SafePointController::class, 'store']);
-        Route::get('/nearby',  [SafePointController::class, 'nearby']);
-        Route::get('/{id}',    [SafePointController::class, 'show']);
-        Route::put('/{id}',    [SafePointController::class, 'update']);
-        Route::delete('/{id}', [SafePointController::class, 'destroy']);
+        Route::middleware(['role:admin,supervisor,operator'])->group(function () {
+            Route::get('/',       [SafePointController::class, 'index']);
+            Route::get('/nearby', [SafePointController::class, 'nearby']);
+            Route::get('/{id}',   [SafePointController::class, 'show']);
+        });
+        Route::middleware(['role:admin,supervisor'])->group(function () {
+            Route::post('/',       [SafePointController::class, 'store']);
+            Route::put('/{id}',    [SafePointController::class, 'update']);
+        });
+        Route::middleware(['role:admin'])->group(function () {
+            Route::delete('/{id}', [SafePointController::class, 'destroy']);
+        });
     });
 
-    // Evidencias
+    // ── Evidencias: admin CRUD, supervisor lectura + crear, operator solo lectura ──
     Route::prefix('evidence')->group(function () {
-        Route::get('/',              [EvidenceController::class, 'index']);
-        Route::post('/',             [EvidenceController::class, 'store']);
-        Route::get('/{id}/download', [EvidenceController::class, 'download']);
+        Route::middleware(['role:admin,supervisor,operator'])->group(function () {
+            Route::get('/',              [EvidenceController::class, 'index']);
+            Route::get('/{id}/download', [EvidenceController::class, 'download']);
+        });
+        Route::middleware(['role:admin,supervisor'])->group(function () {
+            Route::post('/', [EvidenceController::class, 'store']);
+        });
     });
 
-}); 
+});
 
 
 // ─── Rutas IoT — device token ─────────────────────────────────
@@ -85,7 +130,6 @@ Route::middleware('device.token')->prefix('iot')->group(function () {
     Route::post('location',       [IoTController::class, 'location']);
     Route::post('location/batch', [IoTController::class, 'locationBatch']);
     Route::post('sensors',        [VehicleSensorController::class, 'store']);
-
 });
 
 
@@ -105,13 +149,14 @@ Route::prefix('dimas')->group(function () {
         Route::post('emergencia',                 [DimasEmergencyController::class, 'sos']);
         Route::post('auxilio-vial',               [DimasEmergencyController::class, 'auxilioVial']);
         Route::post('auxilio-vial/{id}/cancelar', [DimasEmergencyController::class, 'cancelarAuxilio']);
-        
+
         // Reportes
-        Route::post('reportes',              [DimasReporteController::class, 'store']);
-        Route::get('reportes',               [DimasReporteController::class, 'index']);
-        Route::get('reportes/{id}',          [DimasReporteController::class, 'show']);
-        Route::post('reportes/{id}/cancelar',[DimasReporteController::class, 'cancelar']);
-        Route::patch('dimas/reportes/{id}/estado', [DimasReporteController::class, 'actualizarEstado']);
+        Route::get('reportes/activo',         [DimasReporteController::class, 'reporteActivo']);
+        Route::post('reportes',               [DimasReporteController::class, 'store']);
+        Route::get('reportes',                [DimasReporteController::class, 'index']);
+        Route::get('reportes/{id}',           [DimasReporteController::class, 'show']);
+        Route::post('reportes/{id}/cancelar', [DimasReporteController::class, 'cancelar']);
+        Route::patch('reportes/{id}/estado',  [DimasReporteController::class, 'actualizarEstado']);
     });
 
 });
