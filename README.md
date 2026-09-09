@@ -36,6 +36,7 @@ https://drive.google.com/file/d/18Tb2ySuozgBwOeUOSp-Tjj1Bi-F_mPRp/view?usp=drive
 ## Manual de usuario plataforma predictiva
 https://drive.google.com/file/d/1gLRnr1HG5Mgz-hqBotJ72TA7Q2NjUZUr/view?usp=drive_link
 
-## Documentación completa
+## Documentación completa ARGOS
+https://drive.google.com/file/d/19LgVDn9cDgWhd_w8yu5WenB1vdKWsI7p/view?usp=drive_link
 
 ## Documento financiero
