@@ -35,3 +35,7 @@ https://drive.google.com/file/d/18Tb2ySuozgBwOeUOSp-Tjj1Bi-F_mPRp/view?usp=drive
 
 ## Manual de usuario plataforma predictiva
 https://drive.google.com/file/d/1gLRnr1HG5Mgz-hqBotJ72TA7Q2NjUZUr/view?usp=drive_link
+
+## Documentación completa
+
+## Documento financiero
