@@ -22,3 +22,6 @@ https://drive.google.com/file/d/1_lBmPFa3dmwThr1ec58XFq4LMNuY5R1f/view?usp=drive
 
 ## App Conductor ARGOS
 https://github.com/AnaBazan12/conductor-app.git
+
+## Manual de usuario
+https://drive.google.com/file/d/18Tb2ySuozgBwOeUOSp-Tjj1Bi-F_mPRp/view?usp=drive_link
