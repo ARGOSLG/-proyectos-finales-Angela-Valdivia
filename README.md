@@ -1,6 +1,6 @@
 # Proyecto ARGOS
 
-Sistema web integral y aplicación móvil diseñados para optimizar la gestión y operación del proyecto ARGOS.
+Plataforma B2B con telemetría mecánica periférica, correlación contextual de riesgo y bypass crítico en tiempo real (< 2s) para mitigar el asalto en tránsito.
 
 ## Tecnologías Utilizadas
 
