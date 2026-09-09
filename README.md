@@ -39,4 +39,6 @@ https://drive.google.com/file/d/1gLRnr1HG5Mgz-hqBotJ72TA7Q2NjUZUr/view?usp=drive
 ## Documentación completa ARGOS
 https://drive.google.com/file/d/19LgVDn9cDgWhd_w8yu5WenB1vdKWsI7p/view?usp=drive_link
 
-## Documento financiero
+## Estructura financiera
+- **Estimación:** https://drive.google.com/file/d/17L9W1RNXHb4Y-konrINU0wj22rYAaMDy/view?usp=drive_link
+- **Licencias de software y Plataformas:** https://drive.google.com/file/d/15gCVH2a1msFb863RkLox2pl5r9zJlIYK/view
